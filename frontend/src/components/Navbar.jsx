@@ -7,7 +7,7 @@ const Navbar = () => {
     <nav className="navbar glass">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo brand-font">
-          <img src="/logo.jpg" alt="Logo" className="logo-image" onError={(e) => {
+          <img src="/logo.jpeg" alt="Logo" className="logo-image" onError={(e) => {
             e.target.onerror = null;
             e.target.style.display = 'none';
           }}/>

@@ -5,6 +5,7 @@ const cors = require('cors');
 require('dotenv').config(); // This loads your .env file
 
 const waterTrailRoutes = require('./routes/waterTrailRoutes'); 
+const authRoutes = require('./routes/authRoutes');
 
 // 2. Initialize the app
 const app = express();
@@ -25,7 +26,7 @@ mongoose.connect(URL)
   });
 
   app.use('/api/trails', waterTrailRoutes);
-  
+  app.use('/api/auth', authRoutes);
 // 5. Basic Test Route
 app.get('/', (req, res) => {
   res.send("Welcome to Water Trails Ratnapura API!");

@@ -15,13 +15,21 @@ const waterTrailSchema = new mongoose.Schema({
         required: true
     },
     location: {
-        lat: { type: Number, required: true },
-        lng: { type: Number, required: true },
+        type: {
+            type: String,
+            enum: ['Point'], // GeoJSON requirement
+            required: true,
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // Note: MongoDB requires [longitude, latitude] order!
+            required: true
+        },
         nearestTown: { type: String, required: true }
     },
     navigationNotes: {
         type: String,
-        required: true // Your special hidden road directions!
+        required: true // Offline cached hidden road directions
     },
     difficulty: {
         type: String,
@@ -29,13 +37,14 @@ const waterTrailSchema = new mongoose.Schema({
     },
     safetyLevel: {
         type: String,
-        default: "Moderate" // e.g., "Safe", "Moderate", "Danger during Rain"
+        default: "Moderate" // "Safe", "Moderate", "Danger during Rain"
     },
-    image: {
-        type: String,
-        required: true // We will store the Cloudinary URL here later
-    }
+    images: [{
+        url: { type: String, required: true } // Cloudinary URL
+    }]
 }, { timestamps: true }); // Automatically adds 'createdAt' and 'updatedAt' dates
 
-// Export the model so we can use it in other files
+// Create the 2dsphere index! Essential for "$near" Geospatial Queries
+waterTrailSchema.index({ "location": "2dsphere" });
+
 module.exports = mongoose.model('WaterTrail', waterTrailSchema);
