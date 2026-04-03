@@ -92,11 +92,11 @@ const AdminPanel = () => {
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
-                alert(`Hidden Gem Successfully ${editModeId ? "Updated" : "Added"}!`);
+                alert(`Location Successfully ${editModeId ? "Updated" : "Added"}!`);
                 resetForm();
                 fetchGems(); // Refresh the grid!
             } else {
-                alert("Failed to save gem.");
+                alert("Failed to save location.");
             }
         } catch (err) {
             console.error(err);
@@ -111,7 +111,7 @@ const AdminPanel = () => {
                 headers: { 'Authorization': `Bearer ${jwt}` }
             });
             if (res.ok) {
-                alert("Gem deleted permanently.");
+                alert("Location deleted permanently.");
                 fetchGems();
             }
         } catch (err) {
@@ -185,7 +185,7 @@ const AdminPanel = () => {
     return (
         <div className="admin-container glass" style={{maxWidth: '800px'}}>
             <div className="admin-header">
-                <h2>{editModeId ? "Edit Existing Gem" : "Add New Hidden Gem"}</h2>
+                <h2>{editModeId ? "Edit Existing Location" : "Add New Water Location"}</h2>
                 <div>
                    {editModeId && <button onClick={resetForm} className="custom-btn" style={{marginRight: '10px', background: '#333'}}>Cancel Edit</button>}
                    <button onClick={handleLogout} className="logout-btn">Logout</button>
@@ -193,10 +193,9 @@ const AdminPanel = () => {
             </div>
             
             <form onSubmit={handleSaveGem} className="admin-form">
-                <input type="text" placeholder="Gem Name (e.g., Kuruwita Falls)" value={gemData.name} onChange={e => setGemData({...gemData, name: e.target.value})} required />
+                <input type="text" placeholder="Location Name (e.g., Kuruwita Falls)" value={gemData.name} onChange={e => setGemData({...gemData, name: e.target.value})} required />
                 <select value={gemData.category} onChange={e => setGemData({...gemData, category: e.target.value})}>
                     <option value="Waterfall">Waterfall</option>
-                    <option value="River Trail">River Trail</option>
                     <option value="Natural Pool">Natural Pool</option>
                 </select>
                 <textarea placeholder="Description" value={gemData.description} onChange={e => setGemData({...gemData, description: e.target.value})} required />
@@ -208,14 +207,14 @@ const AdminPanel = () => {
                 <textarea placeholder="Navigation/Offline Directions to reach there" value={gemData.navigationNotes} onChange={e => setGemData({...gemData, navigationNotes: e.target.value})} required />
                 <input type="url" placeholder="Direct Image URL (Cloudinary Manual)" value={gemData.imageUrl} onChange={e => setGemData({...gemData, imageUrl: e.target.value})} required />
                 <button type="submit" className="custom-btn">
-                     {editModeId ? "Update Gem in Atlas Database" : "Save Gem to Atlas Database"}
+                     {editModeId ? "Update Location in Atlas Database" : "Save Location to Atlas Database"}
                 </button>
             </form>
 
             {/* List of Existing Databases Elements */}
             <div style={{marginTop: '40px', borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '20px'}}>
-                <h3 className="brand-font" style={{color: 'var(--secondary)'}}>Currently Saved Gems</h3>
-                {gemsList.length === 0 ? <p>No gems saved yet.</p> : (
+                <h3 className="brand-font" style={{color: 'var(--secondary)'}}>Currently Saved Locations</h3>
+                {gemsList.length === 0 ? <p>No locations saved yet.</p> : (
                     <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px'}}>
                         {gemsList.map(gem => (
                             <div key={gem._id} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.4)', padding: '10px 15px', borderRadius: '8px'}}>
