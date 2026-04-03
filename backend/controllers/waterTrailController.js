@@ -49,4 +49,26 @@ const getNearbyTrails = async (req, res) => {
     }
 };
 
-module.exports = { createTrail, getAllTrails, getNearbyTrails };
+// 4. PUT Update an existing Gem (PUT)
+const updateTrail = async (req, res) => {
+    try {
+        const updatedTrail = await WaterTrail.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedTrail) return res.status(404).json({ message: "Gem not found!" });
+        res.status(200).json(updatedTrail);
+    } catch (error) {
+        res.status(400).json({ message: "Failed to update location", error: error.message });
+    }
+};
+
+// 5. DELETE a Gem (DELETE)
+const deleteTrail = async (req, res) => {
+    try {
+        const deletedTrail = await WaterTrail.findByIdAndDelete(req.params.id);
+        if (!deletedTrail) return res.status(404).json({ message: "Gem not found!" });
+        res.status(200).json({ message: "Successfully deleted gem!" });
+    } catch (error) {
+        res.status(400).json({ message: "Failed to delete location", error: error.message });
+    }
+};
+
+module.exports = { createTrail, getAllTrails, getNearbyTrails, updateTrail, deleteTrail };

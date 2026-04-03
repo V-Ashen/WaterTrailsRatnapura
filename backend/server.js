@@ -17,12 +17,15 @@ app.use(express.json());
 // 4. Connect to MongoDB Atlas
 const URL = process.env.MONGO_URI;
 
-mongoose.connect(URL)
+mongoose.connect(URL, { 
+  serverSelectionTimeoutMS: 5000, // Fail fast if blocked
+  family: 4                       // Force IPv4, often fixes "buffering timed out" on Windows Node.js!
+})
   .then(() => {
     console.log("✅ Successfully connected to MongoDB Atlas (Ratnapura Database)!");
   })
   .catch((error) => {
-    console.log("❌ Error connecting to database:", error);
+    console.log("❌ Error connecting to database. Please check Atlas Network Access or Campus Firewall:", error.message);
   });
 
   app.use('/api/trails', waterTrailRoutes);

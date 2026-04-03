@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminPanel.css'; 
 
 const AdminPanel = () => {
@@ -6,11 +6,33 @@ const AdminPanel = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
+    
+    // Existing database entries
+    const [gemsList, setGemsList] = useState([]);
+    
+    // Determines if we are Updating an existing Document instead of POSTing a new one
+    const [editModeId, setEditModeId] = useState(null);
+
     // State matching our WaterTrail MongoDB Schema
     const [gemData, setGemData] = useState({
         name: '', category: 'Waterfall', description: '', navigationNotes: '', difficulty: 'Easy',
         lat: '', lng: '', nearestTown: '', safetyLevel: 'Safe', imageUrl: ''
     });
+
+    // Fetch existing gems securely on load
+    const fetchGems = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/trails');
+            const data = await res.json();
+            if (Array.isArray(data)) setGemsList(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        if (jwt) fetchGems();
+    }, [jwt]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -37,16 +59,15 @@ const AdminPanel = () => {
         setJwt(null);
     };
 
-    const handleCreateGem = async (e) => {
+    const handleSaveGem = async (e) => {
         e.preventDefault();
-        // Construct the GeoJSON correctly before sending to backend
         const payload = {
             name: gemData.name,
             category: gemData.category,
             description: gemData.description,
             location: {
                 type: 'Point',
-                coordinates: [parseFloat(gemData.lng), parseFloat(gemData.lat)], // Longitude always goes first!
+                coordinates: [parseFloat(gemData.lng), parseFloat(gemData.lat)],
                 nearestTown: gemData.nearestTown
             },
             navigationNotes: gemData.navigationNotes,
@@ -55,24 +76,72 @@ const AdminPanel = () => {
             images: [{ url: gemData.imageUrl }]
         };
 
+        const targetUrl = editModeId 
+            ? `http://localhost:5000/api/trails/${editModeId}` 
+            : 'http://localhost:5000/api/trails';
+            
+        const targetMethod = editModeId ? 'PUT' : 'POST';
+
         try {
-            const res = await fetch('http://localhost:5000/api/trails', {
-                method: 'POST',
+            const res = await fetch(targetUrl, {
+                method: targetMethod,
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwt}` // Adding the JWT Authentication Token headers
+                    'Authorization': `Bearer ${jwt}` 
                 },
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
-                alert("Hidden Gem Successfully Added and Geocoded in Atlas!");
-                setGemData({ ...gemData, name: '', description: '', imageUrl: '' }); // Reset fields slightly
+                alert(`Hidden Gem Successfully ${editModeId ? "Updated" : "Added"}!`);
+                resetForm();
+                fetchGems(); // Refresh the grid!
             } else {
-                alert("Failed to add gem.");
+                alert("Failed to save gem.");
             }
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const handleDeleteGem = async (id) => {
+        if (!window.confirm("Are you sure you want to rigorously delete this from the Atlas Database?")) return;
+        try {
+            const res = await fetch(`http://localhost:5000/api/trails/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${jwt}` }
+            });
+            if (res.ok) {
+                alert("Gem deleted permanently.");
+                fetchGems();
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const startEditing = (gem) => {
+        setEditModeId(gem._id);
+        setGemData({
+            name: gem.name,
+            category: gem.category,
+            description: gem.description,
+            navigationNotes: gem.navigationNotes,
+            difficulty: gem.difficulty,
+            lat: gem.location.coordinates[1], // Latitude
+            lng: gem.location.coordinates[0], // Longitude
+            nearestTown: gem.location.nearestTown,
+            safetyLevel: gem.safetyLevel,
+            imageUrl: gem.images && gem.images.length > 0 ? gem.images[0].url : ''
+        });
+        window.scrollTo(0,0);
+    };
+
+    const resetForm = () => {
+        setEditModeId(null);
+        setGemData({
+            name: '', category: 'Waterfall', description: '', navigationNotes: '', difficulty: 'Easy',
+            lat: '', lng: '', nearestTown: '', safetyLevel: 'Safe', imageUrl: ''
+        });
     };
 
     const handleRegister = async (e) => {
@@ -114,12 +183,16 @@ const AdminPanel = () => {
     }
 
     return (
-        <div className="admin-container glass">
+        <div className="admin-container glass" style={{maxWidth: '800px'}}>
             <div className="admin-header">
-                <h2>Add New Hidden Gem</h2>
-                <button onClick={handleLogout} className="logout-btn">Logout</button>
+                <h2>{editModeId ? "Edit Existing Gem" : "Add New Hidden Gem"}</h2>
+                <div>
+                   {editModeId && <button onClick={resetForm} className="custom-btn" style={{marginRight: '10px', background: '#333'}}>Cancel Edit</button>}
+                   <button onClick={handleLogout} className="logout-btn">Logout</button>
+                </div>
             </div>
-            <form onSubmit={handleCreateGem} className="admin-form">
+            
+            <form onSubmit={handleSaveGem} className="admin-form">
                 <input type="text" placeholder="Gem Name (e.g., Kuruwita Falls)" value={gemData.name} onChange={e => setGemData({...gemData, name: e.target.value})} required />
                 <select value={gemData.category} onChange={e => setGemData({...gemData, category: e.target.value})}>
                     <option value="Waterfall">Waterfall</option>
@@ -134,8 +207,32 @@ const AdminPanel = () => {
                 <input type="text" placeholder="Nearest Town" value={gemData.nearestTown} onChange={e => setGemData({...gemData, nearestTown: e.target.value})} required />
                 <textarea placeholder="Navigation/Offline Directions to reach there" value={gemData.navigationNotes} onChange={e => setGemData({...gemData, navigationNotes: e.target.value})} required />
                 <input type="url" placeholder="Direct Image URL (Cloudinary Manual)" value={gemData.imageUrl} onChange={e => setGemData({...gemData, imageUrl: e.target.value})} required />
-                <button type="submit" className="custom-btn">Save Gem to Atlas Database</button>
+                <button type="submit" className="custom-btn">
+                     {editModeId ? "Update Gem in Atlas Database" : "Save Gem to Atlas Database"}
+                </button>
             </form>
+
+            {/* List of Existing Databases Elements */}
+            <div style={{marginTop: '40px', borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '20px'}}>
+                <h3 className="brand-font" style={{color: 'var(--secondary)'}}>Currently Saved Gems</h3>
+                {gemsList.length === 0 ? <p>No gems saved yet.</p> : (
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px'}}>
+                        {gemsList.map(gem => (
+                            <div key={gem._id} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.4)', padding: '10px 15px', borderRadius: '8px'}}>
+                                <div>
+                                    <strong>{gem.name}</strong> 
+                                    <span style={{fontSize: '0.8rem', marginLeft: '10px', color: '#aaa'}}>{gem.category}</span>
+                                </div>
+                                <div style={{display:'flex', gap: '10px'}}>
+                                     <button onClick={() => startEditing(gem)} style={{padding: '5px 10px', background: 'var(--primary)', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer'}}>Edit</button>
+                                     <button onClick={() => handleDeleteGem(gem._id)} style={{padding: '5px 10px', background: '#d32f2f', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer'}}>Delete</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
         </div>
     );
 };
