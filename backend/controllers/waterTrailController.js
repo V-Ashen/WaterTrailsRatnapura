@@ -1,9 +1,41 @@
 const WaterTrail = require('../models/WaterTrail');
+const cloudinary = require('../config/cloudinary');
+const streamifier = require('streamifier');
+
+// Helper function to build a Node Stream pipeline to Cloudinary
+const streamUpload = (req) => {
+    return new Promise((resolve, reject) => {
+        let stream = cloudinary.uploader.upload_stream(
+            { folder: "watertrails" },
+            (error, result) => {
+                if (result) {
+                    resolve(result);
+                } else {
+                    reject(error);
+                }
+            }
+        );
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+    });
+};
 
 // 1. ADD a new Hidden Gem (POST)
 const createTrail = async (req, res) => {
     try {
-        const newTrail = new WaterTrail(req.body);
+        let trailData = {...req.body};
+
+        // When using FormData, complex objects come as stringified JSON!
+        if (typeof trailData.location === 'string') {
+            trailData.location = JSON.parse(trailData.location);
+        }
+
+        // Connect the uploaded file buffer to Cloudinary dynamically
+        if (req.file) {
+            const result = await streamUpload(req);
+            trailData.images = [{ url: result.secure_url }];
+        }
+
+        const newTrail = new WaterTrail(trailData);
         const savedTrail = await newTrail.save();
         res.status(201).json(savedTrail);
     } catch (error) {
@@ -52,7 +84,18 @@ const getNearbyTrails = async (req, res) => {
 // 4. PUT Update an existing Gem (PUT)
 const updateTrail = async (req, res) => {
     try {
-        const updatedTrail = await WaterTrail.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        let trailData = {...req.body};
+
+        if (typeof trailData.location === 'string') {
+            trailData.location = JSON.parse(trailData.location);
+        }
+
+        if (req.file) {
+            const result = await streamUpload(req);
+            trailData.images = [{ url: result.secure_url }];
+        }
+
+        const updatedTrail = await WaterTrail.findByIdAndUpdate(req.params.id, trailData, { new: true });
         if (!updatedTrail) return res.status(404).json({ message: "Gem not found!" });
         res.status(200).json(updatedTrail);
     } catch (error) {

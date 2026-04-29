@@ -16,7 +16,7 @@ const AdminPanel = () => {
     // State matching our WaterTrail MongoDB Schema
     const [gemData, setGemData] = useState({
         name: '', category: 'Waterfall', description: '', navigationNotes: '', difficulty: 'Easy',
-        lat: '', lng: '', nearestTown: '', safetyLevel: 'Safe', imageUrl: ''
+        lat: '', lng: '', nearestTown: '', safetyLevel: 'Safe', imageFile: null
     });
 
     // Fetch existing gems securely on load
@@ -61,20 +61,29 @@ const AdminPanel = () => {
 
     const handleSaveGem = async (e) => {
         e.preventDefault();
-        const payload = {
-            name: gemData.name,
-            category: gemData.category,
-            description: gemData.description,
-            location: {
-                type: 'Point',
-                coordinates: [parseFloat(gemData.lng), parseFloat(gemData.lat)],
-                nearestTown: gemData.nearestTown
-            },
-            navigationNotes: gemData.navigationNotes,
-            difficulty: gemData.difficulty,
-            safetyLevel: gemData.safetyLevel,
-            images: [{ url: gemData.imageUrl }]
-        };
+        
+        // Native browser FormData replaces JSON to securely handle binary file chunks
+        const formData = new FormData();
+        formData.append('name', gemData.name);
+        formData.append('category', gemData.category);
+        formData.append('description', gemData.description);
+        
+        // MongoDB Geospatial schemas require Objects, so we convert this to a string here
+        // and safely JSON.parse() it when it hits Express.
+        formData.append('location', JSON.stringify({
+            type: 'Point',
+            coordinates: [parseFloat(gemData.lng), parseFloat(gemData.lat)],
+            nearestTown: gemData.nearestTown
+        }));
+        
+        formData.append('navigationNotes', gemData.navigationNotes);
+        formData.append('difficulty', gemData.difficulty);
+        formData.append('safetyLevel', gemData.safetyLevel);
+        
+        // Append the physical file if the user attached one
+        if (gemData.imageFile) {
+            formData.append('image', gemData.imageFile);
+        }
 
         const targetUrl = editModeId 
             ? `http://localhost:5000/api/trails/${editModeId}` 
@@ -86,10 +95,10 @@ const AdminPanel = () => {
             const res = await fetch(targetUrl, {
                 method: targetMethod,
                 headers: { 
-                    'Content-Type': 'application/json',
+                    // No 'Content-Type' header here! Fetch automatically sets multipart/form-data boundaries.
                     'Authorization': `Bearer ${jwt}` 
                 },
-                body: JSON.stringify(payload)
+                body: formData
             });
             if (res.ok) {
                 alert(`Location Successfully ${editModeId ? "Updated" : "Added"}!`);
@@ -131,7 +140,7 @@ const AdminPanel = () => {
             lng: gem.location.coordinates[0], // Longitude
             nearestTown: gem.location.nearestTown,
             safetyLevel: gem.safetyLevel,
-            imageUrl: gem.images && gem.images.length > 0 ? gem.images[0].url : ''
+            imageFile: null // File inputs cannot be pre-populated for security, existing files remain if not replaced
         });
         window.scrollTo(0,0);
     };
@@ -140,7 +149,7 @@ const AdminPanel = () => {
         setEditModeId(null);
         setGemData({
             name: '', category: 'Waterfall', description: '', navigationNotes: '', difficulty: 'Easy',
-            lat: '', lng: '', nearestTown: '', safetyLevel: 'Safe', imageUrl: ''
+            lat: '', lng: '', nearestTown: '', safetyLevel: 'Safe', imageFile: null
         });
     };
 
@@ -205,7 +214,12 @@ const AdminPanel = () => {
                 </div>
                 <input type="text" placeholder="Nearest Town" value={gemData.nearestTown} onChange={e => setGemData({...gemData, nearestTown: e.target.value})} required />
                 <textarea placeholder="Navigation/Offline Directions to reach there" value={gemData.navigationNotes} onChange={e => setGemData({...gemData, navigationNotes: e.target.value})} required />
-                <input type="url" placeholder="Direct Image URL (Cloudinary Manual)" value={gemData.imageUrl} onChange={e => setGemData({...gemData, imageUrl: e.target.value})} required />
+                
+                <label style={{color: '#ccc', fontSize: '0.9rem', marginBottom: '-5px', marginLeft: '5px'}}>
+                    {editModeId ? "Replace Image (Optional)" : "Upload Cover Image (Required)"}
+                </label>
+                <input type="file" accept="image/*" onChange={e => setGemData({...gemData, imageFile: e.target.files[0]})} required={!editModeId} style={{padding: '10px'}} />
+                
                 <button type="submit" className="custom-btn">
                      {editModeId ? "Update Location in Atlas Database" : "Save Location to Atlas Database"}
                 </button>
