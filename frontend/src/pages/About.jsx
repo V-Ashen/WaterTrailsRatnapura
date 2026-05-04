@@ -9,21 +9,25 @@ const About = () => {
         <p className="subtitle">Engineering the future of geographic tourism</p>
       </header>
 
-      <div className="glass" style={{maxWidth: '800px', width: '90%', padding: '40px', borderRadius: '15px', color: '#ccc', lineHeight: '1.6'}}>
-        <h2 className="brand-font" style={{color: 'var(--secondary)', marginBottom: '20px'}}>Project Vision</h2>
-        <p>
-          <strong>Water Trails Ratnapura</strong> is a high-level Software Engineering MERN Stack (MongoDB, Express, React, Node.js) 
-          application designed to dynamically index and map the incredible aquatic geography surrounding the Ratnapura region. 
-        </p>
-        <p style={{marginTop: '15px'}}>
-          By integrating native Geolocation APIs with the Haversine trigonometric formula and scaling offline via Progressive Web App technology, 
-          this platform serves to seamlessly push digital exploration into nature routes without dropping reliable navigation.
-        </p>
+      <div className="glass" style={{maxWidth: '800px', width: '90%', padding: '40px', borderRadius: '15px', color: '#ccc', lineHeight: '1.8'}}>
         
+        <h2 className="brand-font" style={{color: 'var(--secondary)', marginBottom: '15px'}}>💎 The Hidden Sanctuary</h2>
+        <p>
+          Ratnapura's greatest treasures are its sapphire-clear waterfalls and emerald rivers 
+          that remain hidden from the world. We bring these secrets to light.
+        </p>
+
+        <h2 className="brand-font" style={{color: 'var(--secondary)', marginTop: '35px', marginBottom: '15px'}}>🌿 Ethical Tourism: The Guardian's Code</h2>
+        <p>
+          Many of these locations are untouched. They are clean. They are silent. 
+          As a user of Water Trails, you agree to be a <strong style={{color: 'white'}}>Guardian of the Trail</strong>. 
+          Carry your trash back, respect the silence, and leave only footprints.
+        </p>
+
         <div style={{marginTop: '40px', borderTop: '1px solid rgba(100,255,218,0.2)', paddingTop: '20px'}}>
-            <h3 style={{color: 'white', marginBottom: '10px'}}>Lead Engineer</h3>
-            <p className="brand-font" style={{fontSize: '1.2rem', color: 'var(--accent)'}}>Vihanga asen</p>
+          <small style={{color: '#aaa'}}>Developer: <strong style={{color: 'var(--accent)'}}>Vihanga Asen</strong></small>
         </div>
+
       </div>
     </div>
   );

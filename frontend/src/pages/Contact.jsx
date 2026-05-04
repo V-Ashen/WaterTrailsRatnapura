@@ -26,7 +26,7 @@ ${message}`;
   };
 
   return (
-    <div className="home-container" style={{alignItems: 'center', justifyContent: 'flex-start', paddingTop: '100px'}}>
+    <div className="home-container" style={{alignItems: 'center', justifyContent: 'flex-start', paddingTop: '120px'}}>
       <header className="hero-header" style={{marginBottom: '40px'}}>
         <h1 className="brand-font title-glow">Contact Us</h1>
         <p className="subtitle">Submit new locations or request details</p>
@@ -48,10 +48,10 @@ ${message}`;
             onChange={e => setEmail(e.target.value)}
             required
           />
-          <select value={reason} onChange={e => setReason(e.target.value)}>
-            <option value="General Inquiry">General Inquiry</option>
-            <option value="Submit a new Water Place">Submit a new Water Place</option>
-            <option value="Report inaccurate location data">Report inaccurate location data</option>
+          <select value={reason} onChange={e => setReason(e.target.value)} style={{color: 'white', background: '#1a2a40'}}>
+            <option value="General Inquiry" style={{color: 'white', background: '#1a2a40'}}>General Inquiry</option>
+            <option value="Submit a new Water Place" style={{color: 'white', background: '#1a2a40'}}>Submit a new Water Place</option>
+            <option value="Report inaccurate location data" style={{color: 'white', background: '#1a2a40'}}>Report inaccurate location data</option>
           </select>
           <textarea
             placeholder="Write your message here..."

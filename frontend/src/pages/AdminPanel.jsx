@@ -204,9 +204,10 @@ const AdminPanel = () => {
             
             <form onSubmit={handleSaveGem} className="admin-form">
                 <input type="text" placeholder="Location Name (e.g., Kuruwita Falls)" value={gemData.name} onChange={e => setGemData({...gemData, name: e.target.value})} required />
-                <select value={gemData.category} onChange={e => setGemData({...gemData, category: e.target.value})}>
-                    <option value="Waterfall">Waterfall</option>
-                    <option value="Natural Pool">Natural Pool</option>
+                <select value={gemData.category} onChange={e => setGemData({...gemData, category: e.target.value})} style={{color: 'white', background: '#1a2a40'}}>
+                    <option value="Waterfall" style={{color: 'white', background: '#1a2a40'}}>Waterfall</option>
+                    <option value="Natural Pool" style={{color: 'white', background: '#1a2a40'}}>Natural Pool</option>
+                    <option value="Bath Place" style={{color: 'white', background: '#1a2a40'}}>Bath Place</option>
                 </select>
                 <textarea placeholder="Description" value={gemData.description} onChange={e => setGemData({...gemData, description: e.target.value})} required />
                 <div style={{display:'flex', gap: '10px'}}>
