@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const URI = "mongodb+srv://vihangaasen_db_user:e0nEVd4hDDuozIcE@cluster0.vib8wcb.mongodb.net/RatnapuraDB?appName=Cluster0";
+const URI = "url";
 
 async function testConnection() {
     console.log("Attempting to connect to MongoDB Atlas...");
