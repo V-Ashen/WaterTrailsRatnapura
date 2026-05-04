@@ -105,7 +105,8 @@ const AdminPanel = () => {
                 resetForm();
                 fetchGems(); // Refresh the grid!
             } else {
-                alert("Failed to save location.");
+                const errData = await res.json();
+                alert(`❌ Failed (${res.status}): ${errData.message}\n\nDetail: ${errData.error || 'Check backend terminal'}`);
             }
         } catch (err) {
             console.error(err);
